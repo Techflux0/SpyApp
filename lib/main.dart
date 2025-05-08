@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
+import 'data/service.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -138,6 +140,115 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
     }
   }
 
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Trivia Quiz Pro',
+          style: TextStyle(fontWeight: FontWeight.bold)),
+      centerTitle: true,
+      backgroundColor: const Color(0xFF2E7D32),
+      foregroundColor: Colors.white,
+    ),
+    body: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
+        ),
+      ),
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
+          : Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Select Category:',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2E7D32)),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _categories.length,
+                      itemBuilder: (ctx, index) => Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ListTile(
+                          title: Text(_categories[index].name,
+                              style: const TextStyle(fontWeight: FontWeight.w500)),
+                          tileColor: _selectedCategoryId == _categories[index].id
+                              ? const Color(0xFFC8E6C9)
+                              : Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          onTap: () => setState(
+                              () => _selectedCategoryId = _categories[index].id),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Number of Questions:',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2E7D32)),
+                  ),
+                  Slider(
+                    value: _questionCount.toDouble(),
+                    min: 3,
+                    max: 20,
+                    divisions: 17,
+                    label: _questionCount.toString(),
+                    activeColor: const Color(0xFF2E7D32),
+                    inactiveColor: const Color(0xFF81C784),
+                    onChanged: (value) =>
+                        setState(() => _questionCount = value.toInt()),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _startQuiz,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7D32),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Start Quiz',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ScoreHistoryPage(),
+          ),
+        );
+      },
+      backgroundColor: const Color(0xFF2E7D32),
+      child: const Icon(Icons.history, color: Colors.white),
+    ),
+  );
+}
+
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -171,102 +282,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trivia Quiz Pro',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
-          ),
-        ),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)))
-            : Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Select Category:',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E7D32)),
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: _categories.length,
-                        itemBuilder: (ctx, index) => Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: ListTile(
-                            title: Text(_categories[index].name,
-                                style: const TextStyle(fontWeight: FontWeight.w500)),
-                            tileColor: _selectedCategoryId == _categories[index].id
-                                ? const Color(0xFFC8E6C9)
-                                : Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            onTap: () => setState(
-                                () => _selectedCategoryId = _categories[index].id),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Number of Questions:',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E7D32)),
-                    ),
-                    Slider(
-                      value: _questionCount.toDouble(),
-                      min: 3,
-                      max: 20,
-                      divisions: 17,
-                      label: _questionCount.toString(),
-                      activeColor: const Color(0xFF2E7D32),
-                      inactiveColor: const Color(0xFF81C784),
-                      onChanged: (value) =>
-                          setState(() => _questionCount = value.toInt()),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _startQuiz,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E7D32),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        'Start Quiz',
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-      ),
-    );
-  }
+  // Removed duplicate build method
 }
 
 class QuizPage extends StatefulWidget {
@@ -364,80 +380,117 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
-  void _showResultDialog() {
-    final percentage = (_score / widget.questionCount) * 100;
-    String message;
-    String emoji;
-    Color color;
+void _showResultDialog() async {
+  final percentage = (_score / widget.questionCount) * 100;
+  String message;
+  String emoji;
+  Color color;
 
-    if (percentage >= 80) {
-      message = 'Excellent! You really know your stuff!';
-      emoji = '🎉';
-      color = const Color(0xFF4CAF50);
-    } else if (percentage >= 60) {
-      message = 'Good job! Keep learning!';
-      emoji = '👍';
-      color = const Color(0xFF66BB6A);
-    } else if (percentage >= 40) {
-      message = 'Not bad! Try again to improve!';
-      emoji = '😊';
-      color = const Color(0xFF81C784);
-    } else {
-      message = 'Nice try! Keep practicing!';
-      emoji = '💪';
-      color = const Color(0xFFEF5350);
-    }
+  if (percentage >= 80) {
+    message = 'Excellent! You really know your stuff!';
+    emoji = '🎉';
+    color = const Color(0xFF4CAF50);
+  } else if (percentage >= 60) {
+    message = 'Good job! Keep learning!';
+    emoji = '👍';
+    color = const Color(0xFF66BB6A);
+  } else if (percentage >= 40) {
+    message = 'Not bad! Try again to improve!';
+    emoji = '😊';
+    color = const Color(0xFF81C784);
+  } else {
+    message = 'Nice try! Keep practicing!';
+    emoji = '💪';
+    color = const Color(0xFFEF5350);
+  }
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        title: Text('Quiz Completed $emoji',
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: color,
-                fontSize: 24)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('You scored $_score out of ${widget.questionCount}',
-                style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 10),
-            Text(message,
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[800],
-                    fontWeight: FontWeight.w500)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.popUntil(ctx, (route) => route.isFirst);
-            },
-            child: const Text('Back to Categories',
-                style: TextStyle(color: Color(0xFF2E7D32))),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              setState(() {
-                _currentIndex = 0;
-                _selectedAnswer = null;
-                _score = 0;
-              });
-            },
-            child: const Text('Try Again',
-                style: TextStyle(color: Color(0xFF2E7D32))),
-          ),
+  // Get category name
+  final categories = await QuizService.fetchCategories();
+  final category = categories.firstWhere((c) => c.id == widget.categoryId);
+
+  // Prepare question details
+  final questionDetails = {
+    'questions': _questions.map((q) => {
+      'question': q.question,
+      'correctAnswer': q.correctAnswer,
+      'userAnswer': _selectedAnswer,
+      'isCorrect': _selectedAnswer == q.correctAnswer,
+    }).toList(),
+  };
+
+  // Save to database
+  await DatabaseService.instance.insertResult(QuizResult(
+    categoryId: widget.categoryId,
+    categoryName: category.name,
+    score: _score,
+    totalQuestions: widget.questionCount,
+    date: DateTime.now(),
+    details: jsonEncode(questionDetails),
+  ));
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      title: Text('Quiz Completed $emoji',
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: color,
+              fontSize: 24)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('You scored $_score out of ${widget.questionCount}',
+              style: const TextStyle(fontSize: 18)),
+          const SizedBox(height: 10),
+          Text(message,
+              style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.w500)),
         ],
       ),
-    );
-  }
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.popUntil(ctx, (route) => route.isFirst);
+          },
+          child: const Text('Back to Categories',
+              style: TextStyle(color: Color(0xFF2E7D32))),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(ctx);
+            setState(() {
+              _currentIndex = 0;
+              _selectedAnswer = null;
+              _score = 0;
+            });
+          },
+          child: const Text('Try Again',
+              style: TextStyle(color: Color(0xFF2E7D32))),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(ctx);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ScoreHistoryPage(categoryId: widget.categoryId),
+              ),
+            );
+          },
+          child: const Text('View History',
+              style: TextStyle(color: Color(0xFF2E7D32))),
+        ),
+      ],
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -515,6 +568,159 @@ class _QuizPageState extends State<QuizPage> {
                   ],
                 ),
               ),
+      ),
+    );
+  }
+}
+
+
+class ScoreHistoryPage extends StatefulWidget {
+  final int? categoryId;
+
+  const ScoreHistoryPage({super.key, this.categoryId});
+
+  @override
+  State<ScoreHistoryPage> createState() => _ScoreHistoryPageState();
+}
+
+class _ScoreHistoryPageState extends State<ScoreHistoryPage> {
+  late Future<List<QuizResult>> _resultsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadResults();
+  }
+
+  void _loadResults() {
+    if (widget.categoryId != null) {
+      _resultsFuture = DatabaseService.instance.getResultsByCategory(widget.categoryId!);
+    } else {
+      _resultsFuture = DatabaseService.instance.getAllResults();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.categoryId != null ? 'Category History' : 'All Quiz History'),
+        backgroundColor: const Color(0xFF2E7D32),
+        foregroundColor: Colors.white,
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
+          ),
+        ),
+        child: FutureBuilder<List<QuizResult>>(
+          future: _resultsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator(color: Color(0xFF2E7D32)));
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No quiz results found'));
+            }
+
+            final results = snapshot.data!;
+
+            return ListView.builder(
+              itemCount: results.length,
+              itemBuilder: (context, index) {
+                final result = results[index];
+                final details = jsonDecode(result.details);
+                final percentage = (result.score / result.totalQuestions) * 100;
+
+                return Card(
+                  margin: const EdgeInsets.all(8),
+                  elevation: 2,
+                  child: ExpansionTile(
+                    title: Text(
+                      result.categoryName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${result.score}/${result.totalQuestions} (${percentage.toStringAsFixed(1)}%) - ${DateFormat('MMM dd, yyyy HH:mm').format(result.date)}',
+                    ),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Question Details:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...List.generate(details['questions'].length, (i) {
+                              final question = details['questions'][i];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      question['isCorrect'] ? Icons.check : Icons.close,
+                                      color: question['isCorrect'] ? Colors.green : Colors.red,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            question['question'],
+                                            style: const TextStyle(fontWeight: FontWeight.w500),
+                                          ),
+                                          Text(
+                                            'Your answer: ${question['userAnswer'] ?? 'Not answered'}',
+                                            style: TextStyle(
+                                              color: question['isCorrect'] ? Colors.green : Colors.red,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Correct answer: ${question['correctAnswer']}',
+                                            style: const TextStyle(color: Colors.green),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ScoreHistoryPage(),
+            ),
+          );
+        },
+        backgroundColor: const Color(0xFF2E7D32),
+        child: const Icon(Icons.history, color: Colors.white),
       ),
     );
   }

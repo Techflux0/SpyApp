@@ -16,6 +16,10 @@ dependencies:
   http: ^0.13.6
   audioplayers: ^5.1.0
   html_unescape: ^2.0.0
+  sqflite: ^2.3.0
+  path_provider: ^2.1.1
+  path: ^1.8.3
+  intl: ^0.18.0
 
 dev_dependencies:
   flutter_test:
