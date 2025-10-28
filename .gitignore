@@ -15,7 +15,7 @@ migrate_working_dir/
 .fetch-client
 .idea
 .qodo
-
+/fuckt
 
 # IntelliJ related
 *.iml
